@@ -1,0 +1,15 @@
+// 환경변수 -> TypeORM 옵션 변환 (factory)
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+
+export function typeormConfig(): TypeOrmModuleOptions {
+    return {
+        type: 'postgres',
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT ?? 5432),
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        autoLoadEntities: true,
+        synchronize: false, // dev 환경에서만 true
+    };
+}
