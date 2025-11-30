@@ -38,8 +38,8 @@ export class Book {
     @Column({ type: 'varchar', length: 255, nullable: true })
     author?: string | null;
 
-    @Column({ name: 'read_start_period', type: 'date' })
-    readStartPeriod: string;
+    @Column({ name: 'read_start_period', type: 'date', nullable: true })
+    readStartPeriod?: string | null;
 
     @Column({ name: 'read_end_period', type: 'date', nullable: true })
     readEndPeriod?: string | null;
