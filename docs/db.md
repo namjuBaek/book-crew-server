@@ -3,7 +3,7 @@
 ## 공통 규칙
 
 - **구현 기술 스택**: TypeORM + MySQL 사용을 원칙으로 하며 아래 명세는 해당 구조로 코드로 구현한다.
-- **DB**: PostgreSQL 기준으로 작성. 다른 RDB도 타입만 맞게 치환 가능.
+- **DB**: MySQL 기준으로 작성. 다른 RDB도 타입만 맞게 치환 가능.
 - **테이블 네이밍**: `snake_case`, 복수형
   - 예: `user` → `users`, `meeting_log` → `meeting_logs`
 - **기본 키(PK)**: 모든 테이블 `id BIGSERIAL` (또는 `BIGINT` + 시퀀스)
@@ -251,6 +251,6 @@
 ## 8. 구현 시 참고
 
 - `role` 컬럼은
-  - PostgreSQL ENUM 타입으로 만들거나,
+  - MySQL ENUM 타입으로 만들거나,
   - VARCHAR로 두고 애플리케이션 레벨에서 enum 관리.
 - `read_start_period`, `read_end_period`는 기간 기준으로 `DATE`를 사용하되, 시각까지 필요하면 `TIMESTAMPTZ`로 변경해서 구현.
