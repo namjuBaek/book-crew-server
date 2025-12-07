@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class SignupResponseDto {
+export class LogoutResponseDto {
     @ApiProperty({
         description: '요청 성공 여부',
         example: true,
@@ -9,14 +9,7 @@ export class SignupResponseDto {
 
     @ApiProperty({
         description: '응답 메시지',
-        example: '회원가입이 완료되었습니다.',
+        example: '로그아웃되었습니다.',
     })
     message: string;
-
-    @ApiProperty({
-        description: '생성된 사용자 아이디',
-        example: 'testuser123',
-        required: false,
-    })
-    userId?: string;
 }

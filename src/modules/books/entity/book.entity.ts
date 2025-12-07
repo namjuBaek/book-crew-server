@@ -22,7 +22,7 @@ export class Book {
     @CreateDateColumn({
         name: 'created_at',
         type: 'timestamp',
-        default: () => 'CURRENT_TIMESTAMP',
+        default: () => 'CURRENT_TIMESTAMP(6)',
     })
     createdAt: Date;
 
