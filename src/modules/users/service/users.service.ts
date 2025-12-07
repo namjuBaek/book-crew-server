@@ -85,6 +85,7 @@ export class UsersService {
         // 사용자 조회
         const user = await this.usersRepository.findByUserId(userId);
         if (!user) {
+            console.log(`Login failed: User not found with userId ${userId}`);
             throw new UnauthorizedException(
                 '아이디 또는 비밀번호가 일치하지 않습니다.',
             );
@@ -93,6 +94,7 @@ export class UsersService {
         // 비밀번호 검증
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
+            console.log(`Login failed: Invalid password for userId ${userId}`);
             throw new UnauthorizedException(
                 '아이디 또는 비밀번호가 일치하지 않습니다.',
             );

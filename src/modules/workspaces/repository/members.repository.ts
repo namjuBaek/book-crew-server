@@ -8,7 +8,7 @@ export class MembersRepository {
     constructor(
         @InjectRepository(Member)
         private readonly repo: Repository<Member>,
-    ) {}
+    ) { }
 
     create(payload: Partial<Member>): Member {
         return this.repo.create(payload);
@@ -20,5 +20,20 @@ export class MembersRepository {
 
     findByUserAndWorkspace(userId: string, workspaceId: string): Promise<Member | null> {
         return this.repo.findOne({ where: { userId, workspaceId } });
+    }
+
+    findWorkspacesByUserId(userId: string): Promise<Member[]> {
+        return this.repo.find({
+            where: { userId },
+            relations: ['workspace'],
+            order: { createdAt: 'DESC' },
+        });
+    }
+
+    findMemberWithWorkspace(userId: string, workspaceId: string): Promise<Member | null> {
+        return this.repo.findOne({
+            where: { userId, workspaceId },
+            relations: ['workspace'],
+        });
     }
 }
