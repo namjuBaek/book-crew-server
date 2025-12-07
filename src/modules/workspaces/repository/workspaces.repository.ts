@@ -31,4 +31,8 @@ export class WorkspacesRepository {
             order: { createdAt: 'DESC' },
         });
     }
+
+    delete(id: string): Promise<void> {
+        return this.repo.delete(id).then(() => undefined);
+    }
 }

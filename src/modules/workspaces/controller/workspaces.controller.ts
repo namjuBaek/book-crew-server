@@ -3,6 +3,8 @@ import {
     Controller,
     Post,
     Get,
+    Patch,
+    Delete,
     Query,
     Param,
     UseGuards,
@@ -30,6 +32,12 @@ import { SearchWorkspaceResponseDto } from '../dto/search-workspace-response.dto
 import { JoinWorkspaceDto } from '../dto/join-workspace.dto';
 import { JoinWorkspaceResponseDto } from '../dto/join-workspace-response.dto';
 import { GetWorkspaceDetailResponseDto } from '../dto/get-workspace-detail-response.dto';
+import { GetWorkspaceMemberResponseDto } from '../dto/get-workspace-member-response.dto';
+import { UpdateMemberProfileDto } from '../dto/update-member-profile.dto';
+import { UpdateMemberProfileResponseDto } from '../dto/update-member-profile-response.dto';
+import { UpdateWorkspaceDto } from '../dto/update-workspace.dto';
+import { UpdateWorkspaceResponseDto } from '../dto/update-workspace-response.dto';
+import { DeleteWorkspaceResponseDto } from '../dto/delete-workspace-response.dto';
 import { JwtAuthGuard } from '../../users/guard/jwt-auth.guard';
 import { CurrentUser } from '../../users/decorator/current-user.decorator';
 import type { CurrentUserData } from '../../users/decorator/current-user.decorator';
@@ -241,6 +249,189 @@ export class WorkspacesController {
             }
             throw new InternalServerErrorException(
                 '워크스페이스 정보 조회 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Get(':id/me')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '내 멤버 정보 조회',
+        description: '해당 워크스페이스에서의 내 멤버 정보를 조회합니다.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '조회 성공',
+        type: GetWorkspaceMemberResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (멤버 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async getWorkspaceMemberInfo(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+    ): Promise<GetWorkspaceMemberResponseDto> {
+        try {
+            return await this.workspacesService.getWorkspaceMemberInfo(user.id, id);
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '멤버 정보 조회 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Patch(':id/me')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '멤버 프로필 수정',
+        description: '워크스페이스 멤버의 이름을 수정합니다.',
+    })
+    @ApiBody({ type: UpdateMemberProfileDto })
+    @ApiResponse({
+        status: 200,
+        description: '수정 성공',
+        type: UpdateMemberProfileResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (멤버 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async updateMemberProfile(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+        @Body() updateMemberProfileDto: UpdateMemberProfileDto,
+    ): Promise<UpdateMemberProfileResponseDto> {
+        try {
+            return await this.workspacesService.updateMemberProfile(
+                user.id,
+                id,
+                updateMemberProfileDto,
+            );
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '멤버 프로필 수정 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Patch(':id')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '워크스페이스 수정',
+        description: '워크스페이스 정보를 수정합니다. 관리자만 가능합니다.',
+    })
+    @ApiBody({ type: UpdateWorkspaceDto })
+    @ApiResponse({
+        status: 200,
+        description: '수정 성공',
+        type: UpdateWorkspaceResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (관리자 아님)',
+    })
+    @ApiResponse({
+        status: 404,
+        description: '워크스페이스 없음',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async updateWorkspace(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+        @Body() updateWorkspaceDto: UpdateWorkspaceDto,
+    ): Promise<UpdateWorkspaceResponseDto> {
+        try {
+            return await this.workspacesService.updateWorkspace(
+                user.id,
+                id,
+                updateWorkspaceDto,
+            );
+        } catch (error) {
+            if (
+                error instanceof ForbiddenException ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '워크스페이스 수정 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '워크스페이스 삭제',
+        description: '워크스페이스를 삭제합니다. 관리자만 가능합니다.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '삭제 성공',
+        type: DeleteWorkspaceResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (관리자 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async deleteWorkspace(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+    ): Promise<DeleteWorkspaceResponseDto> {
+        try {
+            return await this.workspacesService.deleteWorkspace(user.id, id);
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '워크스페이스 삭제 중 오류가 발생했습니다.',
             );
         }
     }

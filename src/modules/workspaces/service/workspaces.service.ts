@@ -12,6 +12,12 @@ import { SearchWorkspaceResponseDto } from '../dto/search-workspace-response.dto
 import { JoinWorkspaceDto } from '../dto/join-workspace.dto';
 import { JoinWorkspaceResponseDto } from '../dto/join-workspace-response.dto';
 import { GetWorkspaceDetailResponseDto } from '../dto/get-workspace-detail-response.dto';
+import { GetWorkspaceMemberResponseDto } from '../dto/get-workspace-member-response.dto';
+import { UpdateMemberProfileDto } from '../dto/update-member-profile.dto';
+import { UpdateMemberProfileResponseDto } from '../dto/update-member-profile-response.dto';
+import { UpdateWorkspaceDto } from '../dto/update-workspace.dto';
+import { UpdateWorkspaceResponseDto } from '../dto/update-workspace-response.dto';
+import { DeleteWorkspaceResponseDto } from '../dto/delete-workspace-response.dto';
 import { CurrentUserData } from '../../users/decorator/current-user.decorator';
 import {
     NotFoundException,
@@ -197,6 +203,130 @@ export class WorkspacesService {
                 role: member.role,
             },
             message: '워크스페이스 정보를 조회했습니다.',
+        };
+    }
+
+    async getWorkspaceMemberInfo(
+        userId: string,
+        workspaceId: string,
+    ): Promise<GetWorkspaceMemberResponseDto> {
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
+        }
+
+        return {
+            success: true,
+            data: {
+                id: member.id,
+                name: member.name,
+                role: member.role,
+                userId: member.userId,
+            },
+            message: '멤버 정보를 조회했습니다.',
+        };
+    }
+
+    async updateMemberProfile(
+        userId: string,
+        workspaceId: string,
+        updateMemberProfileDto: UpdateMemberProfileDto,
+    ): Promise<UpdateMemberProfileResponseDto> {
+        const { name } = updateMemberProfileDto;
+
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
+        }
+
+        member.name = name;
+        await this.membersRepository.save(member);
+
+        return {
+            success: true,
+            data: {
+                id: member.id,
+                name: member.name,
+            },
+            message: '멤버 프로필을 수정했습니다.',
+        };
+    }
+
+    async updateWorkspace(
+        userId: string,
+        workspaceId: string,
+        updateWorkspaceDto: UpdateWorkspaceDto,
+    ): Promise<UpdateWorkspaceResponseDto> {
+        const { name } = updateWorkspaceDto;
+
+        // 1. 멤버십 및 권한 확인
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
+        }
+
+        if (member.role !== 'ADMIN') {
+            throw new ForbiddenException('워크스페이스 수정 권한이 없습니다.');
+        }
+
+        // 2. 워크스페이스 정보 수정
+        const workspace = await this.workspacesRepository.findById(workspaceId);
+        if (!workspace) {
+            // 멤버는 있는데 워크스페이스가 없는 경우는 데이터 무결성 오류이지만, 처리해둠
+            throw new NotFoundException('워크스페이스를 찾을 수 없습니다.');
+        }
+
+        workspace.name = name;
+        await this.workspacesRepository.save(workspace);
+
+        return {
+            success: true,
+            data: {
+                id: workspace.id,
+                name: workspace.name,
+            },
+            message: '워크스페이스 정보를 수정했습니다.',
+        };
+    }
+
+    async deleteWorkspace(
+        userId: string,
+        workspaceId: string,
+    ): Promise<DeleteWorkspaceResponseDto> {
+        // 1. 멤버십 및 권한 확인
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
+        }
+
+        if (member.role !== 'ADMIN') {
+            throw new ForbiddenException('워크스페이스 삭제 권한이 없습니다.');
+        }
+
+        // 2. 워크스페이스 삭제
+        // DB의 ON DELETE CASCADE 설정으로 인해 멤버, 책, 미팅 로그 등이 자동 삭제됨
+        await this.workspacesRepository.delete(workspaceId);
+
+        return {
+            success: true,
+            data: {},
+            message: '워크스페이스를 삭제했습니다.',
         };
     }
 
