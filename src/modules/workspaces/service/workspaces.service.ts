@@ -18,6 +18,10 @@ import { UpdateMemberProfileResponseDto } from '../dto/update-member-profile-res
 import { UpdateWorkspaceDto } from '../dto/update-workspace.dto';
 import { UpdateWorkspaceResponseDto } from '../dto/update-workspace-response.dto';
 import { DeleteWorkspaceResponseDto } from '../dto/delete-workspace-response.dto';
+import { LeaveWorkspaceResponseDto } from '../dto/leave-workspace-response.dto';
+import { GetWorkspaceMembersDto } from '../dto/get-workspace-members.dto';
+import { GetWorkspaceMembersResponseDto } from '../dto/get-workspace-members-response.dto';
+import { CanLeaveWorkspaceResponseDto } from '../dto/can-leave-workspace-response.dto';
 import { CurrentUserData } from '../../users/decorator/current-user.decorator';
 import {
     NotFoundException,
@@ -327,6 +331,101 @@ export class WorkspacesService {
             success: true,
             data: {},
             message: '워크스페이스를 삭제했습니다.',
+        };
+    }
+
+    async leaveWorkspace(
+        userId: string,
+        workspaceId: string,
+    ): Promise<LeaveWorkspaceResponseDto> {
+        // 1. 멤버십 확인
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 참여하고 있지 않습니다.');
+        }
+
+        // 2. 관리자가 나가려는 경우 (선택 사항: 관리자 권한 이양 로직이 없다면 관리자만 남으면 삭제되거나 에러 처리 등이 필요할 수 있음)
+        // 여기서는 별도 제약 없이 나가는 것으로 구현. 관리자가 나가면 해당 워크스페이스는 관리자가 없게 됨.
+        // 필요 시: if (member.role === 'ADMIN') throw new BadRequestException('관리자는 워크스페이스를 나갈 수 없습니다. 먼저 관리자를 위임하거나 워크스페이스를 삭제하세요.');
+
+        // 3. 멤버 삭제 (나가기)
+        await this.membersRepository.delete(member.id);
+
+        return {
+            success: true,
+            data: {},
+            message: '워크스페이스에서 나갔습니다.',
+        };
+    }
+
+    async getWorkspaceMembers(
+        userId: string,
+        workspaceId: string,
+        getWorkspaceMembersDto: GetWorkspaceMembersDto,
+    ): Promise<GetWorkspaceMembersResponseDto> {
+        const { page } = getWorkspaceMembersDto;
+
+        // 1. 멤버십 확인 (현재 요청자가 멤버인지)
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
+        }
+
+        // 2. 멤버 목록 조회
+        const members = await this.membersRepository.findByWorkspaceId(
+            workspaceId,
+            page,
+        );
+
+        const memberData = members.map((m) => ({
+            id: m.id,
+            name: m.name,
+            role: m.role,
+            userId: m.userId,
+        }));
+
+        return {
+            success: true,
+            data: memberData,
+            message: '워크스페이스 멤버 목록을 조회했습니다.',
+        };
+    }
+
+    async checkIfCanLeaveWorkspace(
+        userId: string,
+        workspaceId: string,
+    ): Promise<CanLeaveWorkspaceResponseDto> {
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스에 참여하고 있지 없습니다.');
+        }
+
+        let canLeave = true;
+
+        // 관리자인 경우, 혼자인지 확인
+        if (member.role === 'ADMIN') {
+            const adminCount = await this.membersRepository.countAdmins(workspaceId);
+            if (adminCount <= 1) {
+                canLeave = false;
+            }
+        }
+
+        return {
+            success: true,
+            data: { canLeave },
+            message: '나가기 가능 여부를 확인했습니다.',
         };
     }
 

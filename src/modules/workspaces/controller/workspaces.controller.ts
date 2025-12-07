@@ -38,6 +38,10 @@ import { UpdateMemberProfileResponseDto } from '../dto/update-member-profile-res
 import { UpdateWorkspaceDto } from '../dto/update-workspace.dto';
 import { UpdateWorkspaceResponseDto } from '../dto/update-workspace-response.dto';
 import { DeleteWorkspaceResponseDto } from '../dto/delete-workspace-response.dto';
+import { LeaveWorkspaceResponseDto } from '../dto/leave-workspace-response.dto';
+import { GetWorkspaceMembersDto } from '../dto/get-workspace-members.dto';
+import { GetWorkspaceMembersResponseDto } from '../dto/get-workspace-members-response.dto';
+import { CanLeaveWorkspaceResponseDto } from '../dto/can-leave-workspace-response.dto';
 import { JwtAuthGuard } from '../../users/guard/jwt-auth.guard';
 import { CurrentUser } from '../../users/decorator/current-user.decorator';
 import type { CurrentUserData } from '../../users/decorator/current-user.decorator';
@@ -432,6 +436,140 @@ export class WorkspacesController {
             }
             throw new InternalServerErrorException(
                 '워크스페이스 삭제 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Delete(':id/me')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '워크스페이스 나가기',
+        description: '워크스페이스에서 탈퇴합니다. 나의 멤버 정보만 삭제됩니다.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '나가기 성공',
+        type: LeaveWorkspaceResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (멤버 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async leaveWorkspace(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+    ): Promise<LeaveWorkspaceResponseDto> {
+        try {
+            return await this.workspacesService.leaveWorkspace(user.id, id);
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '워크스페이스 나가기 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Get(':id/member')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '워크스페이스 멤버 목록 조회',
+        description: '워크스페이스의 멤버 목록을 조회합니다.',
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: '페이지 번호 (기본값: 1)',
+        type: Number,
+    })
+    @ApiResponse({
+        status: 200,
+        description: '조회 성공',
+        type: GetWorkspaceMembersResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (멤버 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async getWorkspaceMembers(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+        @Query() getWorkspaceMembersDto: GetWorkspaceMembersDto,
+    ): Promise<GetWorkspaceMembersResponseDto> {
+        try {
+            return await this.workspacesService.getWorkspaceMembers(
+                user.id,
+                id,
+                getWorkspaceMembersDto,
+            );
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '멤버 목록 조회 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Get(':id/me/can-leave')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '워크스페이스 나가기 가능 여부 확인',
+        description: '워크스페이스에서 나갈 수 있는지 확인합니다. (유일한 관리자는 나갈 수 없음)',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '확인 성공',
+        type: CanLeaveWorkspaceResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '접근 권한 없음 (멤버 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async checkIfCanLeaveWorkspace(
+        @CurrentUser() user: CurrentUserData,
+        @Param('id') id: string,
+    ): Promise<CanLeaveWorkspaceResponseDto> {
+        try {
+            return await this.workspacesService.checkIfCanLeaveWorkspace(user.id, id);
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '나가기 가능 여부 확인 중 오류가 발생했습니다.',
             );
         }
     }

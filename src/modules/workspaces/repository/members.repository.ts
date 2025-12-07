@@ -36,4 +36,23 @@ export class MembersRepository {
             relations: ['workspace'],
         });
     }
+
+    delete(id: string): Promise<void> {
+        return this.repo.delete(id).then(() => undefined);
+    }
+
+    findByWorkspaceId(workspaceId: string, page: number = 1, limit: number = 20): Promise<Member[]> {
+        return this.repo.find({
+            where: { workspaceId },
+            skip: (page - 1) * limit,
+            take: limit,
+            order: { name: 'ASC' },
+        });
+    }
+
+    countAdmins(workspaceId: string): Promise<number> {
+        return this.repo.count({
+            where: { workspaceId, role: 'ADMIN' },
+        });
+    }
 }
