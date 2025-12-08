@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class WorkspaceMemberData {
+class MemberProfileData {
     @ApiProperty({
         description: '멤버 ID',
         example: '1',
@@ -8,8 +8,8 @@ class WorkspaceMemberData {
     id: string;
 
     @ApiProperty({
-        description: '멤버 이름',
-        example: 'Member Name',
+        description: '멤버 이름 (워크스페이스 내 닉네임)',
+        example: 'My Nickname',
     })
     name: string;
 
@@ -24,9 +24,15 @@ class WorkspaceMemberData {
         example: '10',
     })
     userId: string;
+
+    @ApiProperty({
+        description: '워크스페이스 ID',
+        example: '1',
+    })
+    workspaceId: string;
 }
 
-export class GetWorkspaceMembersResponseDto {
+export class GetMemberProfileResponseDto {
     @ApiProperty({
         description: '요청 성공 여부',
         example: true,
@@ -34,14 +40,14 @@ export class GetWorkspaceMembersResponseDto {
     success: boolean;
 
     @ApiProperty({
-        description: '멤버 목록 데이터',
-        type: [WorkspaceMemberData],
+        description: '멤버 데이터',
+        type: MemberProfileData,
     })
-    data: WorkspaceMemberData[];
+    data: MemberProfileData;
 
     @ApiProperty({
         description: '응답 메시지',
-        example: '워크스페이스 멤버 목록을 조회했습니다.',
+        example: '멤버 정보를 조회했습니다.',
     })
     message: string;
 }

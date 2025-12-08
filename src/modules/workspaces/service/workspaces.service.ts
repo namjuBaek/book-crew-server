@@ -12,15 +12,10 @@ import { SearchWorkspaceResponseDto } from '../dto/search-workspace-response.dto
 import { JoinWorkspaceDto } from '../dto/join-workspace.dto';
 import { JoinWorkspaceResponseDto } from '../dto/join-workspace-response.dto';
 import { GetWorkspaceDetailResponseDto } from '../dto/get-workspace-detail-response.dto';
-import { GetWorkspaceMemberResponseDto } from '../dto/get-workspace-member-response.dto';
-import { UpdateMemberProfileDto } from '../dto/update-member-profile.dto';
-import { UpdateMemberProfileResponseDto } from '../dto/update-member-profile-response.dto';
 import { UpdateWorkspaceDto } from '../dto/update-workspace.dto';
 import { UpdateWorkspaceResponseDto } from '../dto/update-workspace-response.dto';
 import { DeleteWorkspaceResponseDto } from '../dto/delete-workspace-response.dto';
 import { LeaveWorkspaceResponseDto } from '../dto/leave-workspace-response.dto';
-import { GetWorkspaceMembersDto } from '../dto/get-workspace-members.dto';
-import { GetWorkspaceMembersResponseDto } from '../dto/get-workspace-members-response.dto';
 import { CanLeaveWorkspaceResponseDto } from '../dto/can-leave-workspace-response.dto';
 import { CurrentUserData } from '../../users/decorator/current-user.decorator';
 import {
@@ -210,60 +205,6 @@ export class WorkspacesService {
         };
     }
 
-    async getWorkspaceMemberInfo(
-        userId: string,
-        workspaceId: string,
-    ): Promise<GetWorkspaceMemberResponseDto> {
-        const member = await this.membersRepository.findByUserAndWorkspace(
-            userId,
-            workspaceId,
-        );
-
-        if (!member) {
-            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
-        }
-
-        return {
-            success: true,
-            data: {
-                id: member.id,
-                name: member.name,
-                role: member.role,
-                userId: member.userId,
-            },
-            message: '멤버 정보를 조회했습니다.',
-        };
-    }
-
-    async updateMemberProfile(
-        userId: string,
-        workspaceId: string,
-        updateMemberProfileDto: UpdateMemberProfileDto,
-    ): Promise<UpdateMemberProfileResponseDto> {
-        const { name } = updateMemberProfileDto;
-
-        const member = await this.membersRepository.findByUserAndWorkspace(
-            userId,
-            workspaceId,
-        );
-
-        if (!member) {
-            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
-        }
-
-        member.name = name;
-        await this.membersRepository.save(member);
-
-        return {
-            success: true,
-            data: {
-                id: member.id,
-                name: member.name,
-            },
-            message: '멤버 프로필을 수정했습니다.',
-        };
-    }
-
     async updateWorkspace(
         userId: string,
         workspaceId: string,
@@ -359,43 +300,6 @@ export class WorkspacesService {
             success: true,
             data: {},
             message: '워크스페이스에서 나갔습니다.',
-        };
-    }
-
-    async getWorkspaceMembers(
-        userId: string,
-        workspaceId: string,
-        getWorkspaceMembersDto: GetWorkspaceMembersDto,
-    ): Promise<GetWorkspaceMembersResponseDto> {
-        const { page } = getWorkspaceMembersDto;
-
-        // 1. 멤버십 확인 (현재 요청자가 멤버인지)
-        const member = await this.membersRepository.findByUserAndWorkspace(
-            userId,
-            workspaceId,
-        );
-
-        if (!member) {
-            throw new ForbiddenException('워크스페이스에 접근할 권한이 없습니다.');
-        }
-
-        // 2. 멤버 목록 조회
-        const members = await this.membersRepository.findByWorkspaceId(
-            workspaceId,
-            page,
-        );
-
-        const memberData = members.map((m) => ({
-            id: m.id,
-            name: m.name,
-            role: m.role,
-            userId: m.userId,
-        }));
-
-        return {
-            success: true,
-            data: memberData,
-            message: '워크스페이스 멤버 목록을 조회했습니다.',
         };
     }
 

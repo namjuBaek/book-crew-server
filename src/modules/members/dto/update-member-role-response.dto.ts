@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class UpdatedMemberData {
+class UpdatedRoleData {
     @ApiProperty({
         description: '멤버 ID',
-        example: '1',
+        example: '5',
     })
     id: string;
 
     @ApiProperty({
-        description: '변경된 이름',
-        example: 'New Name',
+        description: '변경된 권한',
+        example: 'ADMIN',
     })
-    name: string;
+    role: string;
 }
 
-export class UpdateMemberProfileResponseDto {
+export class UpdateMemberRoleResponseDto {
     @ApiProperty({
         description: '요청 성공 여부',
         example: true,
@@ -22,14 +22,14 @@ export class UpdateMemberProfileResponseDto {
     success: boolean;
 
     @ApiProperty({
-        description: '변경된 멤버 정보',
-        type: UpdatedMemberData,
+        description: '데이터',
+        type: UpdatedRoleData,
     })
-    data: UpdatedMemberData;
+    data: UpdatedRoleData;
 
     @ApiProperty({
         description: '응답 메시지',
-        example: '멤버 프로필을 수정했습니다.',
+        example: '멤버 권한을 수정했습니다.',
     })
     message: string;
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Member } from '../entity/member.entity';
 
 @Injectable()
@@ -41,9 +41,19 @@ export class MembersRepository {
         return this.repo.delete(id).then(() => undefined);
     }
 
-    findByWorkspaceId(workspaceId: string, page: number = 1, limit: number = 20): Promise<Member[]> {
-        return this.repo.find({
-            where: { workspaceId },
+    findByWorkspaceId(
+        workspaceId: string,
+        page: number = 1,
+        limit: number = 20,
+        keyword?: string,
+    ): Promise<[Member[], number]> {
+        const where: any = { workspaceId };
+        if (keyword) {
+            where.name = Like(`%${keyword}%`);
+        }
+
+        return this.repo.findAndCount({
+            where,
             skip: (page - 1) * limit,
             take: limit,
             order: { name: 'ASC' },
@@ -54,5 +64,9 @@ export class MembersRepository {
         return this.repo.count({
             where: { workspaceId, role: 'ADMIN' },
         });
+    }
+
+    findById(id: string): Promise<Member | null> {
+        return this.repo.findOne({ where: { id } });
     }
 }
