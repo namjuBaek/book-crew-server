@@ -22,10 +22,11 @@ export class BooksRepository {
         return this.repo.findOne({ where: { id } });
     }
 
-    findByWorkspaceId(workspaceId: string): Promise<Book[]> {
+    findByWorkspaceId(workspaceId: string, limit?: number): Promise<Book[]> {
         return this.repo.find({
             where: { workspaceId },
             order: { createdAt: 'DESC' },
+            take: limit,
         });
     }
 }

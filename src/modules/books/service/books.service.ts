@@ -54,7 +54,7 @@ export class BooksService {
         userId: string,
         getBooksDto: GetBooksDto,
     ): Promise<GetBooksResponseDto> {
-        const { workspaceId } = getBooksDto;
+        const { workspaceId, limit } = getBooksDto;
 
         // 1. 멤버십 확인
         const member = await this.membersRepository.findByUserAndWorkspace(
@@ -67,7 +67,7 @@ export class BooksService {
         }
 
         // 2. 책 목록 조회
-        const books = await this.booksRepository.findByWorkspaceId(workspaceId);
+        const books = await this.booksRepository.findByWorkspaceId(workspaceId, limit);
 
         const bookData = books.map((book) => ({
             id: book.id,

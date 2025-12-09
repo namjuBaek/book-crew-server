@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { Repository, Like, Between, MoreThanOrEqual, LessThanOrEqual, LessThan } from 'typeorm';
 import { MeetingLog } from '../entity/meeting-log.entity';
 
 @Injectable()
@@ -20,6 +20,33 @@ export class MeetingLogsRepository {
 
     findById(id: string): Promise<MeetingLog | null> {
         return this.repo.findOne({ where: { id } });
+    }
+
+    findNextMeeting(workspaceId: string, today: string): Promise<MeetingLog | null> {
+        return this.repo.findOne({
+            where: {
+                workspaceId,
+                meetingDate: MoreThanOrEqual(today),
+            },
+            relations: ['book', 'attendees'],
+            order: { meetingDate: 'ASC', createdAt: 'ASC' },
+        });
+    }
+
+    findLatestMeetings(workspaceId: string, today: string): Promise<MeetingLog[]> {
+        return this.repo.find({
+            where: {
+                workspaceId,
+                meetingDate: LessThan(today),
+            },
+            relations: ['book', 'attendees'],
+            order: { meetingDate: 'DESC', createdAt: 'DESC' },
+            take: 3,
+        });
+    }
+
+    countByWorkspaceId(workspaceId: string): Promise<number> {
+        return this.repo.count({ where: { workspaceId } });
     }
 
     findByWorkspaceId(

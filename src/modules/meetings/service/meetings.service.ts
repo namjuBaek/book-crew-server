@@ -10,6 +10,10 @@ import { CreateMeetingResponseDto } from '../dto/create-meeting-response.dto';
 import { GetMeetingsDto } from '../dto/get-meetings.dto';
 import { GetMeetingsResponseDto } from '../dto/get-meetings-response.dto';
 import { GetMeetingDetailDto } from '../dto/get-meeting-detail.dto';
+import { GetNextMeetingDto } from '../dto/get-next-meeting.dto';
+import { GetNextMeetingResponseDto } from '../dto/get-next-meeting-response.dto';
+import { GetLatestMeetingsDto } from '../dto/get-latest-meetings.dto';
+import { GetLatestMeetingsResponseDto } from '../dto/get-latest-meetings-response.dto';
 import { GetMeetingDetailResponseDto } from '../dto/get-meeting-detail-response.dto';
 import { UpdateMeetingDto } from '../dto/update-meeting.dto';
 import { UpdateMeetingResponseDto } from '../dto/update-meeting-response.dto';
@@ -220,6 +224,86 @@ export class MeetingsService {
                 attendees: attendeesData,
             },
             message: '미팅 상세 정보를 조회했습니다.',
+        };
+    }
+
+    async getNextMeeting(
+        userId: string,
+        getNextMeetingDto: GetNextMeetingDto,
+    ): Promise<GetNextMeetingResponseDto> {
+        const { workspaceId } = getNextMeetingDto;
+
+        // 1. 멤버십 확인
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스 접근 권한이 없습니다.');
+        }
+
+        // 2. 다음 미팅 조회
+        const today = new Date().toISOString().split('T')[0];
+        const meeting = await this.meetingLogsRepository.findNextMeeting(
+            workspaceId,
+            today,
+        );
+
+        if (!meeting) {
+            throw new NotFoundException('예정된 다음 미팅이 없습니다.');
+        }
+
+        return {
+            success: true,
+            data: {
+                id: meeting.id,
+                title: meeting.title,
+                meetingDate: meeting.meetingDate,
+                createdAt: meeting.createdAt,
+                bookId: meeting.book ? meeting.book.id : null,
+                bookTitle: meeting.book ? meeting.book.title : null,
+                attendeeCount: meeting.attendees ? meeting.attendees.length : 0,
+            },
+            message: '다음 미팅 정보를 조회했습니다.',
+        };
+    }
+
+    async getLatestMeetings(
+        userId: string,
+        getLatestMeetingsDto: GetLatestMeetingsDto,
+    ): Promise<GetLatestMeetingsResponseDto> {
+        const { workspaceId } = getLatestMeetingsDto;
+
+        // 1. 멤버십 확인
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스 접근 권한이 없습니다.');
+        }
+
+        // 2. 최근 미팅 3개 조회
+        const today = new Date().toISOString().split('T')[0];
+        const meetings = await this.meetingLogsRepository.findLatestMeetings(
+            workspaceId,
+            today,
+        );
+
+        return {
+            success: true,
+            data: meetings.map((meeting) => ({
+                id: meeting.id,
+                title: meeting.title,
+                meetingDate: meeting.meetingDate,
+                createdAt: meeting.createdAt,
+                bookId: meeting.book ? meeting.book.id : null,
+                bookTitle: meeting.book ? meeting.book.title : null,
+                attendeeCount: meeting.attendees ? meeting.attendees.length : 0,
+            })),
+            message: '최근 미팅 목록을 조회했습니다.',
         };
     }
 

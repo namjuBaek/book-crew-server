@@ -12,6 +12,7 @@ import {
     InternalServerErrorException,
     ForbiddenException,
     NotFoundException,
+    Res,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -21,6 +22,7 @@ import {
     ApiBody,
     ApiQuery,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { MeetingsService } from '../service/meetings.service';
 import { CreateMeetingDto } from '../dto/create-meeting.dto';
 import { CreateMeetingResponseDto } from '../dto/create-meeting-response.dto';
@@ -28,6 +30,10 @@ import { GetMeetingsDto } from '../dto/get-meetings.dto';
 import { GetMeetingsResponseDto } from '../dto/get-meetings-response.dto';
 import { GetMeetingDetailDto } from '../dto/get-meeting-detail.dto';
 import { GetMeetingDetailResponseDto } from '../dto/get-meeting-detail-response.dto';
+import { GetNextMeetingDto } from '../dto/get-next-meeting.dto';
+import { GetNextMeetingResponseDto } from '../dto/get-next-meeting-response.dto';
+import { GetLatestMeetingsDto } from '../dto/get-latest-meetings.dto';
+import { GetLatestMeetingsResponseDto } from '../dto/get-latest-meetings-response.dto';
 import { UpdateMeetingDto } from '../dto/update-meeting.dto';
 import { UpdateMeetingResponseDto } from '../dto/update-meeting-response.dto';
 import { UpdateMeetingNoteDto } from '../dto/update-meeting-note.dto';
@@ -47,15 +53,9 @@ export class MeetingsController {
     @ApiBearerAuth('access-token')
     @ApiOperation({
         summary: '미팅 목록 조회',
-        description: '워크스페이스의 미팅 목록을 조회합니다. (페이지네이션 지원)',
+        description: '워크스페이스의 미팅 목록을 조회합니다. 필터링(제목 검색, 날짜 범위)을 지원합니다.',
     })
     @ApiBody({ type: GetMeetingsDto })
-    @ApiQuery({
-        name: 'page',
-        required: false,
-        description: '페이지 번호 (기본값: 1)',
-        type: Number,
-    })
     @ApiResponse({
         status: 200,
         description: '조회 성공',
@@ -90,6 +90,87 @@ export class MeetingsController {
             }
             throw new InternalServerErrorException(
                 '미팅 목록 조회 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Post('next')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '가장 빠른 다음 예정 미팅 조회',
+        description: '현재 날짜 이후 가장 빠른 미팅 정보를 조회합니다.',
+    })
+    @ApiBody({ type: GetNextMeetingDto })
+    @ApiResponse({
+        status: 200,
+        description: '조회 성공',
+        type: GetNextMeetingResponseDto,
+    })
+    @ApiResponse({
+        status: 404,
+        description: '예정된 미팅 없음',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async getNextMeeting(
+        @CurrentUser() user: CurrentUserData,
+        @Body() getNextMeetingDto: GetNextMeetingDto,
+    ): Promise<GetNextMeetingResponseDto> {
+        try {
+            return await this.meetingsService.getNextMeeting(
+                user.id,
+                getNextMeetingDto,
+            );
+        } catch (error) {
+            if (
+                error instanceof ForbiddenException ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '다음 미팅 조회 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Post('latest')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '최근 미팅 목록 조회',
+        description: '최근 종료된 미팅 목록(최대 3개)을 조회합니다.',
+    })
+    @ApiBody({ type: GetLatestMeetingsDto })
+    @ApiResponse({
+        status: 200,
+        description: '조회 성공',
+        type: GetLatestMeetingsResponseDto,
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async getLatestMeetings(
+        @CurrentUser() user: CurrentUserData,
+        @Body() getLatestMeetingsDto: GetLatestMeetingsDto,
+    ): Promise<GetLatestMeetingsResponseDto> {
+        try {
+            return await this.meetingsService.getLatestMeetings(
+                user.id,
+                getLatestMeetingsDto,
+            );
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '최근 미팅 목록 조회 중 오류가 발생했습니다.',
             );
         }
     }

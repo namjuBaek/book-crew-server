@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GetBooksDto {
@@ -9,4 +9,13 @@ export class GetBooksDto {
     @IsNotEmpty({ message: '워크스페이스 ID는 필수입니다.' })
     @IsString()
     workspaceId: string;
+
+    @ApiProperty({
+        description: '조회할 개수 (최신순)',
+        example: 3,
+        required: false,
+    })
+    @IsOptional()
+    @IsNumber()
+    limit?: number;
 }
