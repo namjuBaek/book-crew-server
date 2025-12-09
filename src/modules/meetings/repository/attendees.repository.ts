@@ -8,7 +8,7 @@ export class AttendeesRepository {
     constructor(
         @InjectRepository(Attendee)
         private readonly repo: Repository<Attendee>,
-    ) {}
+    ) { }
 
     create(payload: Partial<Attendee>): Attendee {
         return this.repo.create(payload);
@@ -20,5 +20,16 @@ export class AttendeesRepository {
 
     findByMeetingAndMember(meetingLogId: string, memberId: string): Promise<Attendee | null> {
         return this.repo.findOne({ where: { meetingLogId, memberId } });
+    }
+
+    deleteByMeetingId(meetingLogId: string): Promise<void> {
+        return this.repo.delete({ meetingLogId }).then(() => undefined);
+    }
+
+    findByIdWithUser(id: string): Promise<Attendee | null> {
+        return this.repo.findOne({
+            where: { id },
+            relations: ['member', 'member.user'],
+        });
     }
 }

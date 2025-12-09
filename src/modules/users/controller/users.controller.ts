@@ -161,7 +161,7 @@ export class UsersController {
             res.cookie('accessToken', result.data.accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송
-                sameSite: 'strict',
+                sameSite: 'lax', // Strict -> Lax로 완화
                 maxAge: 60 * 60 * 1000, // 1시간
             });
 
@@ -170,7 +170,7 @@ export class UsersController {
                 res.cookie('refreshToken', result.data.refreshToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
+                    sameSite: 'lax', // Strict -> Lax로 완화
                     maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
                 });
             }
@@ -267,14 +267,14 @@ export class UsersController {
             res.clearCookie('accessToken', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: 'lax',
             });
 
             // refreshToken 쿠키 삭제 (자동 로그인 해제)
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: 'lax',
             });
 
             return await this.usersService.logout();

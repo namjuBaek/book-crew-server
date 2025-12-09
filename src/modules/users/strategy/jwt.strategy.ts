@@ -31,8 +31,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 ExtractJwt.fromAuthHeaderAsBearerToken(),
             ]),
             ignoreExpiration: false,
-            secretOrKey: configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production',
+            secretOrKey: configService.get<string>('JWT_SECRET') || 'TEMP_KEY_BUT_WILL_FAIL',
         });
+
+        if (!configService.get<string>('JWT_SECRET')) {
+            throw new Error('FATAL ERROR: JWT_SECRET environment variable is not defined.');
+        }
     }
 
     async validate(payload: JwtPayload) {

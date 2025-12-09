@@ -35,6 +35,9 @@ export class MeetingLog {
     @Column({ type: 'varchar', length: 255 })
     title: string;
 
+    @Column({ name: 'meeting_date', type: 'date' })
+    meetingDate: string;
+
     @ManyToOne(() => Workspace, (workspace) => workspace.meetingLogs, {
         onDelete: 'CASCADE',
     })

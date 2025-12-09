@@ -5,10 +5,12 @@ import { BooksService } from './service/books.service';
 import { BooksRepository } from './repository/books.repository';
 import { Book } from './entity/book.entity';
 
+import { MembersModule } from '../members/members.module';
+
 @Module({
-    imports: [TypeOrmModule.forFeature([Book])],
+    imports: [TypeOrmModule.forFeature([Book]), MembersModule],
     controllers: [BooksController],
     providers: [BooksService, BooksRepository],
     exports: [TypeOrmModule, BooksService, BooksRepository],
 })
-export class BooksModule {}
+export class BooksModule { }

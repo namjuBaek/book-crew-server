@@ -35,21 +35,6 @@ export class Book {
     @Column({ type: 'varchar', length: 255 })
     title: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    author?: string | null;
-
-    @Column({ name: 'read_start_period', type: 'date', nullable: true })
-    readStartPeriod?: string | null;
-
-    @Column({ name: 'read_end_period', type: 'date', nullable: true })
-    readEndPeriod?: string | null;
-
-    @Column({ name: 'cover_image', type: 'text', nullable: true })
-    coverImage?: string | null;
-
-    @Column({ type: 'text', nullable: true })
-    memo?: string | null;
-
     @ManyToOne(() => Workspace, (workspace) => workspace.books, {
         onDelete: 'CASCADE',
     })

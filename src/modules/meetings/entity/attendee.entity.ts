@@ -33,7 +33,7 @@ export class Attendee {
     memberId: string;
 
     @Column({ type: 'text', nullable: true })
-    memo?: string | null;
+    note?: string | null;
 
     @ManyToOne(() => MeetingLog, (meetingLog) => meetingLog.attendees, {
         onDelete: 'CASCADE',

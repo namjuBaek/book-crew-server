@@ -93,7 +93,6 @@ export class WorkspacesService {
             id: member.workspace.id,
             name: member.workspace.name,
             description: member.workspace.description,
-            coverImage: member.workspace.coverImage,
             createdAt: member.workspace.createdAt,
             role: member.role,
         }));
@@ -120,7 +119,6 @@ export class WorkspacesService {
             id: workspace.id,
             name: workspace.name,
             description: workspace.description,
-            coverImage: workspace.coverImage,
             createdAt: workspace.createdAt,
             isJoined: myWorkspaceIds.has(workspace.id),
         }));
@@ -197,7 +195,6 @@ export class WorkspacesService {
                 id: member.workspace.id,
                 name: member.workspace.name,
                 description: member.workspace.description,
-                coverImage: member.workspace.coverImage,
                 createdAt: member.workspace.createdAt,
                 role: member.role,
             },

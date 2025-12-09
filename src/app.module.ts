@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { BooksModule } from './modules/books/books.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
 import { MembersModule } from './modules/members/members.module';
@@ -15,6 +17,10 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
             isGlobal: true,
             envFilePath: '.env',
         }),
+        ThrottlerModule.forRoot([{
+            ttl: 60000,
+            limit: 100,
+        }]),
         DatabaseModule,
         UsersModule,
         WorkspacesModule,
@@ -23,6 +29,12 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
         MembersModule,
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule { }

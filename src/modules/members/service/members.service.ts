@@ -14,6 +14,8 @@ import { UpdateMemberDto } from '../dto/update-member.dto';
 import { UpdateMemberResponseDto } from '../dto/update-member-response.dto';
 import { UpdateMemberRoleDto } from '../dto/update-member-role.dto';
 import { UpdateMemberRoleResponseDto } from '../dto/update-member-role-response.dto';
+import { SearchMemberDto } from '../dto/search-member.dto';
+import { SearchMemberResponseDto } from '../dto/search-member-response.dto';
 
 @Injectable()
 export class MembersService {
@@ -126,6 +128,45 @@ export class MembersService {
                 currentPage: pageNum,
             },
             message: '멤버 목록을 조회했습니다.',
+        };
+    }
+
+    async searchMembers(
+        userId: string,
+        searchMemberDto: SearchMemberDto,
+    ): Promise<SearchMemberResponseDto> {
+        const { workspaceId, keyword } = searchMemberDto;
+
+        // 1. 멤버십 확인
+        const member = await this.membersRepository.findByUserAndWorkspace(
+            userId,
+            workspaceId,
+        );
+
+        if (!member) {
+            throw new ForbiddenException('워크스페이스 접근 권한이 없습니다.');
+        }
+
+        // 2. 검색 (최대 50명)
+        const limit = 50;
+        const [members] = await this.membersRepository.findByWorkspaceId(
+            workspaceId,
+            1, // 첫 페이지
+            limit,
+            keyword,
+        );
+
+        const memberData = members.map((m) => ({
+            id: m.id,
+            name: m.name,
+            role: m.role,
+            userId: m.userId,
+        }));
+
+        return {
+            success: true,
+            data: memberData,
+            message: '멤버를 검색했습니다.',
         };
     }
 

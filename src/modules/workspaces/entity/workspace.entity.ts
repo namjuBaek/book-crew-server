@@ -27,9 +27,6 @@ export class Workspace {
     @Column({ type: 'text', nullable: true })
     description?: string | null;
 
-    @Column({ name: 'cover_image', type: 'text', nullable: true })
-    coverImage?: string | null;
-
     @Column({ type: 'varchar', length: 255, nullable: true })
     password?: string | null;
 

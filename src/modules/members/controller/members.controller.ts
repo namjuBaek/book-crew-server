@@ -26,6 +26,8 @@ import { KickMemberDto } from '../dto/kick-member.dto';
 import { KickMemberResponseDto } from '../dto/kick-member-response.dto';
 import { GetMembersDto } from '../dto/get-members.dto';
 import { GetMembersResponseDto } from '../dto/get-members-response.dto';
+import { SearchMemberDto } from '../dto/search-member.dto';
+import { SearchMemberResponseDto } from '../dto/search-member-response.dto';
 import { GetMemberProfileDto } from '../dto/get-member-profile.dto';
 import { GetMemberProfileResponseDto } from '../dto/get-member-profile-response.dto';
 import { UpdateMemberDto } from '../dto/update-member.dto';
@@ -76,6 +78,51 @@ export class MembersController {
             }
             throw new InternalServerErrorException(
                 '멤버 목록 조회 중 오류가 발생했습니다.',
+            );
+        }
+    }
+
+    @Post('search')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: '멤버 검색 (참석자 설정용)',
+        description: '워크스페이스 멤버를 검색합니다. (최대 50명, 페이지네이션 없음)',
+    })
+    @ApiBody({ type: SearchMemberDto })
+    @ApiResponse({
+        status: 200,
+        description: '검색 성공',
+        type: SearchMemberResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    @ApiResponse({
+        status: 403,
+        description: '권한 없음 (멤버 아님)',
+    })
+    @ApiResponse({
+        status: 500,
+        description: '서버 오류',
+    })
+    async searchMembers(
+        @CurrentUser() user: CurrentUserData,
+        @Body() searchMemberDto: SearchMemberDto,
+    ): Promise<SearchMemberResponseDto> {
+        try {
+            return await this.membersService.searchMembers(
+                user.id,
+                searchMemberDto,
+            );
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                '멤버 검색 중 오류가 발생했습니다.',
             );
         }
     }

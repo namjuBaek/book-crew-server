@@ -2,10 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 보안 헤더 설정 (Helmet) - 개발 환경에서는 CSP 등을 완화
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  }));
 
   // Cookie Parser 미들웨어 설정
   app.use(cookieParser());
@@ -13,8 +20,8 @@ async function bootstrap() {
   // CORS 설정
   app.enableCors({
     origin: process.env.NODE_ENV === 'production'
-      ? ['https://yourdomain.com'] // 프로덕션 환경: 특정 도메인만 허용
-      : true, // 개발 환경: 모든 origin 허용
+      ? ['https://yourdomain.com']
+      : true, // 개발 환경: 모든 origin 허용 (단 credentials: true 시에는 구체적 origin이나 true로 동작하는지 확인 필요)
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // 쿠키 전송 허용

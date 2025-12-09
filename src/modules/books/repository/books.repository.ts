@@ -8,7 +8,7 @@ export class BooksRepository {
     constructor(
         @InjectRepository(Book)
         private readonly repo: Repository<Book>,
-    ) {}
+    ) { }
 
     create(payload: Partial<Book>): Book {
         return this.repo.create(payload);
@@ -20,5 +20,12 @@ export class BooksRepository {
 
     findById(id: string): Promise<Book | null> {
         return this.repo.findOne({ where: { id } });
+    }
+
+    findByWorkspaceId(workspaceId: string): Promise<Book[]> {
+        return this.repo.find({
+            where: { workspaceId },
+            order: { createdAt: 'DESC' },
+        });
     }
 }

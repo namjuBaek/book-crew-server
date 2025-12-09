@@ -9,6 +9,6 @@ import { MembersRepository } from '../workspaces/repository/members.repository';
     imports: [TypeOrmModule.forFeature([Member])],
     controllers: [MembersController],
     providers: [MembersService, MembersRepository],
-    exports: [MembersService],
+    exports: [MembersService, MembersRepository],
 })
 export class MembersModule { }

@@ -7,10 +7,12 @@ import { AttendeesRepository } from './repository/attendees.repository';
 import { MeetingLog } from './entity/meeting-log.entity';
 import { Attendee } from './entity/attendee.entity';
 
+import { MembersModule } from '../members/members.module';
+
 @Module({
-    imports: [TypeOrmModule.forFeature([MeetingLog, Attendee])],
+    imports: [TypeOrmModule.forFeature([MeetingLog, Attendee]), MembersModule],
     controllers: [MeetingsController],
     providers: [MeetingsService, MeetingLogsRepository, AttendeesRepository],
     exports: [TypeOrmModule, MeetingsService, MeetingLogsRepository, AttendeesRepository],
 })
-export class MeetingsModule {}
+export class MeetingsModule { }

@@ -63,7 +63,6 @@
 | `created_at`  | TIMESTAMPTZ    | YES | `NOW()` | 생성 일시                                  |
 | `name`        | VARCHAR(255)   | YES |         | 워크스페이스 이름                          |
 | `description` | TEXT           | NO  |         | 워크스페이스 소개                          |
-| `cover_image` | TEXT           | NO  |         | 커버 이미지 URL                            |
 | `password`    | VARCHAR(255)   | NO  |         | 입장/참여 코드 (해시 or 평문, 정책에 따라) |
 
 ### 제약 조건
@@ -119,7 +118,6 @@
 ### 목적
 
 - 각 워크스페이스에서 읽는 **책 정보** 관리.
-- 독서 기간, 커버 이미지, 메모 등 포함.
 
 ### 테이블명
 
@@ -127,18 +125,13 @@
 
 ### 컬럼
 
-| 컬럼명              | 타입           | NN  | 기본값  | 설명                                     |
-| ------------------- | -------------- | --- | ------- | ---------------------------------------- |
-| `id`                | BIGSERIAL (PK) | YES |         | 책 식별자                                |
-| `created_at`        | TIMESTAMPTZ    | YES | `NOW()` | 생성 일시                                |
-| `workspace_id`      | BIGINT         | YES |         | FK → `workspaces.id`                     |
-| `created_by_id`     | BIGINT         | YES |         | FK → `members.id`                        |
-| `title`             | VARCHAR(255)   | YES |         | 책 제목                                  |
-| `author`            | VARCHAR(255)   | NO  |         | 저자 (없을 수 있음)                      |
-| `read_start_period` | DATE           | YES |         | 읽기 시작 예정/실제 날짜                 |
-| `read_end_period`   | DATE           | NO  |         | 읽기 종료 예정/실제 날짜 (미정이면 NULL) |
-| `cover_image`       | TEXT           | NO  |         | 책 커버 이미지 URL                       |
-| `memo`              | TEXT           | NO  |         | 책에 대한 메모                           |
+| 컬럼명          | 타입           | NN  | 기본값  | 설명                 |
+| --------------- | -------------- | --- | ------- | -------------------- |
+| `id`            | BIGSERIAL (PK) | YES |         | 책 식별자            |
+| `created_at`    | TIMESTAMPTZ    | YES | `NOW()` | 생성 일시            |
+| `workspace_id`  | BIGINT         | YES |         | FK → `workspaces.id` |
+| `created_by_id` | BIGINT         | YES |         | FK → `members.id`    |
+| `title`         | VARCHAR(255)   | YES |         | 책 제목              |
 
 ### 제약 조건
 
@@ -175,6 +168,7 @@
 | `workspace_id` | BIGINT         | YES |         | FK → `workspaces.id`                                |
 | `book_id`      | BIGINT         | NO  |         | FK → `books.id` (책 없이 모임도 가능하면 NULL 허용) |
 | `title`        | VARCHAR(255)   | YES |         | 모임 제목 (예: "3회차 정기 모임")                   |
+| `meeting_date` | DATE           | YES |         | 진행 일자                                           |
 
 ### 제약 조건
 
@@ -209,7 +203,7 @@
 | `created_at`     | TIMESTAMPTZ    | YES | `NOW()` | 생성 일시                               |
 | `meeting_log_id` | BIGINT         | YES |         | FK → `meeting_logs.id`                  |
 | `member_id`      | BIGINT         | YES |         | FK → `members.id`                       |
-| `memo`           | TEXT           | NO  |         | 해당 참석자에 대한 메모 (지각, 발제 등) |
+| `note`           | TEXT           | NO  |         | 해당 참석자가 해당 문서에 책에 대한 의견을 작성하는 내용 |
 
 ### 제약 조건
 

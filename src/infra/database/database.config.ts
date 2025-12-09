@@ -10,6 +10,6 @@ export function typeormConfig(): TypeOrmModuleOptions {
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
         autoLoadEntities: true,
-        synchronize: false, // dev 환경에서만 true
+        synchronize: true, // dev 환경에서만 true
     };
 }

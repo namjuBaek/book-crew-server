@@ -21,15 +21,8 @@ class WorkspaceDetailData {
     description?: string | null;
 
     @ApiProperty({
-        description: '커버 이미지 URL',
-        example: 'https://example.com/image.jpg',
-        nullable: true,
-    })
-    coverImage?: string | null;
-
-    @ApiProperty({
-        description: '생성일',
-        example: '2025-12-07T07:27:25.000Z',
+        description: '생성 일시',
+        example: '2023-10-01T12:00:00Z',
     })
     createdAt: Date;
 
