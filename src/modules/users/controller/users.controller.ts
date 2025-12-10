@@ -158,6 +158,7 @@ export class UsersController {
             const result = await this.usersService.login(loginDto);
 
             // 액세스 토큰을 HTTP-only 쿠키에 저장 (1시간)
+            // (참고: 프론트엔드에서 헤더 기반 인증을 사용할 수 있도록 Body에도 토큰이 포함되어 반환됩니다)
             res.cookie('accessToken', result.data.accessToken, {
                 httpOnly: true,
                 secure: false,

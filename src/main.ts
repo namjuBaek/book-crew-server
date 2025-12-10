@@ -20,7 +20,7 @@ async function bootstrap() {
   // CORS 설정
   app.enableCors({
     origin: process.env.NODE_ENV === 'production'
-      ? ['https://yourdomain.com']
+      ? ['https://yourdomain.com', 'http://54.180.115.87:3001']
       : true, // 개발 환경: 모든 origin 허용 (단 credentials: true 시에는 구체적 origin이나 true로 동작하는지 확인 필요)
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
