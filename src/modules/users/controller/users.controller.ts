@@ -160,7 +160,7 @@ export class UsersController {
             // 액세스 토큰을 HTTP-only 쿠키에 저장 (1시간)
             res.cookie('accessToken', result.data.accessToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송
+                secure: false,
                 sameSite: 'lax', // Strict -> Lax로 완화
                 maxAge: 60 * 60 * 1000, // 1시간
             });
@@ -169,7 +169,7 @@ export class UsersController {
             if (result.data.refreshToken) {
                 res.cookie('refreshToken', result.data.refreshToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: false,
                     sameSite: 'lax', // Strict -> Lax로 완화
                     maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
                 });
